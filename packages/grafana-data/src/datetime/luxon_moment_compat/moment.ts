@@ -764,6 +764,12 @@ function normalizeZone(zone: string | Zone): Zone {
 
   let normalized = easyTzZoneCache.get(name);
 
+  if (!normalized && !IANAZone.isValidZone(name) && findTimeZoneAt(name, Date.now()) === undefined) {
+    // moment-timezone falls back to UTC for zones it has no data for (e.g. Grafana's 'default'),
+    // rather than producing invalid dates.
+    return FixedOffsetZone.instance(0);
+  }
+
   if (!normalized) {
     normalized = new EasyTzZone(name);
     easyTzZoneCache.set(name, normalized);
